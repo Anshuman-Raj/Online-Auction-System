@@ -20,7 +20,7 @@ class Users(_database.Base):
     date_created = _sql.Column(_sql.DateTime, default=_dt.datetime.utcnow)
 
 class Auctions(_database.Base):
-    __tablename = "auctions"
+    __tablename__ = "auctions"
     id = _sql.Column(_sql.String, primary_key=True, index=True, default=generate_uuid)
     auction_name = _sql.Column(_sql.String, index=True, nullable=False)
     start_time = _sql.Column(_sql.DateTime, index=True)
