@@ -1,0 +1,9 @@
+<div class="card shadow p-3 mb-2 bg-body rounded" style="width: 18rem;">
+    <div class="card-body">
+      <h5 class="card-title">{{obj.auction_name}}</h5>
+      <p class="card-text">Start Time : {{obj.start_time}}</p>
+      <p class="card-text">End Time : {{obj.end_time}}</p>
+      <p class="card-text">Description : {{obj.description[:60]}}</p>
+      <a href="/details/{{obj.id}}" class="btn btn-primary">Read more</a>
+    </div>
+  </div>
