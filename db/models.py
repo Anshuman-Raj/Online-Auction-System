@@ -29,3 +29,4 @@ class Auctions(_database.Base):
     created_by = _sql.Column(_sql.String, _sql.ForeignKey("users.id"), index=True)
     base_bid = _sql.Column(_sql.Integer, index=True, default=0)
     current_bid = _sql.Column(_sql.Integer, index=True, default=0)
+    highest_bidder = _sql.Column(_sql.String, index=True, default="No one")

@@ -12,14 +12,19 @@
   <div class="container">
   <div class="row">
     <div class="col">
-      <h1 class="display-5">Auctions</h1>
+      <h1 class="display-5">My Auctions</h1>
     </div>
+    <div class="text-danger font-weight-bold">
+      {% for error in errors %}
+        <li>{{error}}</li>
+      {% endfor %}
+  </div>
   </div>
   <div class="row">
       {% for auction in auctions %}
         <div class="col-lg-4 col-md-3 col-sm-10 mr-auto">
           {% with obj=auction %}
-      		{% include "components/cards.html" %}
+      		{% include "components/myauctioncards.html" %}
     	    {% endwith %}
 
           {% if loop.index %3 %}

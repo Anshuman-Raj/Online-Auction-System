@@ -1,0 +1,61 @@
+{% extends "shared/base.html" %}
+
+
+{% block title %}
+  <title>Auction Detail</title>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="display-5">Auction Detail</h1>
+    </div>
+    <div class="text-success font-weight-bold">
+      {% if msg %}
+      <div class="badge bg-success text-wrap font-weight-bold" style="font-size: large;">
+        {{msg}}
+      </div>
+      {% endif %}
+  </div>
+  </div>
+
+  <div class="row">
+      <table class="table table-striped table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Auction Name</th>
+            <td colspan="2">{{auction.auction_name}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Start Time</th>
+            <td colspan="2">{{auction.start_time}}</td>
+          </tr>
+          <tr>
+            <th scope="row">End Time</th>
+            <td colspan="2">{{auction.end_time}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Description</th>
+            <td colspan="2">{{auction.description}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Highest Bid</th>
+            <td colspan="2">{{auction.current_bid}}</td>
+          </tr>
+          <tr>
+            <th scope="row">Base Bid</th>
+            <td colspan="2">{{auction.base_bid}}</td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+  <div>
+    <form method="POST">
+      <label>Bid</label>
+          <input type="text" required placeholder="Enter Your Bid" value="{{bid}}" name="bid" class="form-control">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

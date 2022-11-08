@@ -1,5 +1,5 @@
 $( function() {
     $( "#autocomplete" ).autocomplete({
-      source: "/jobs/autocomplete"
+      source: "/auction/autocomplete"
     });
   } );

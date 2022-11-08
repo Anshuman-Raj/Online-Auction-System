@@ -1,5 +1,5 @@
 import db.database as _database
-import models 
+import db.models 
 
 def _add_tables():
     return _database.Base.metadata.create_all(bind=_database.engine)

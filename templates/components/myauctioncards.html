@@ -4,6 +4,7 @@
       <p class="card-text">Start Time : {{obj.start_time}}</p>
       <p class="card-text">End Time : {{obj.end_time}}</p>
       <p class="card-text">Description : {{obj.description[:60]}}</p>
-      <a href="/auction/details/{{obj.id}}" class="btn btn-primary">Read more</a>
+      <a href="/auction/details/{{obj.id}}" class="btn btn-primary">Read more</a><br><br>
+      <a href="/auction/delete/{{obj.id}}" class="btn btn-danger">Delete Auction</a>
     </div>
   </div>

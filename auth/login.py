@@ -6,14 +6,20 @@ from fastapi import HTTPException
 from fastapi import Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
+from fastapi import status
 from sqlalchemy.orm import Session
 from auth.form import LoginForm
 
 
 templates = Jinja2Templates(directory="templates")
-router = APIRouter(include_in_schema=False)
+router = APIRouter(include_in_schema=True)
 
+@router.get("/")
+def log_redirect(request: Request):
+    return RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 
+    
 @router.get("/login")
 def login_(request: Request):
     return templates.TemplateResponse("auth/login.html", {"request": request})
@@ -38,3 +44,10 @@ async def login(request: Request, db: Session = Depends(get_db)):
             form.errors.append("Incorrect Password")
             return templates.TemplateResponse("auth/login.html", form.__dict__)
     return templates.TemplateResponse("auth/login.html", form.__dict__)
+
+# logout
+@router.get("/logout")
+async def logout(request: Request):
+    response = RedirectResponse('/login', status_code= 302)
+    response.delete_cookie(key ='access_token')
+    return response

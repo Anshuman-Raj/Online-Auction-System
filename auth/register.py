@@ -10,7 +10,7 @@ from fastapi.responses import RedirectResponse
 from db.login import UserCreate, create_new_user
 
 templates = Jinja2Templates(directory="templates")
-router = APIRouter(include_in_schema=False)
+router = APIRouter(include_in_schema=True)
 
 @router.get("/register")
 def regiter(request: Request):
