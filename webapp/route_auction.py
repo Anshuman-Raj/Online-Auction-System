@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from auth.route_login import get_current_user_from_token
-from db.auction import create_new_auction, retrieve_auction, retrieve_auctions, update_auction, list_auctions, search_auction, delete_auction
+from db.auction import create_new_auction, retrieve_auction, retrieve_auctions, update_auction, list_auctions, search_auction, delete_auction, payment_cost
 from db.database import get_db
 from db.login import get_user_by_email
 from db.models import Users
@@ -12,11 +12,14 @@ from datetime import datetime as dt
 from fastapi import status
 from typing import Optional
 from fastapi import HTTPException
+from dotenv import load_dotenv
 import sqlite3
+import razorpay
+import os
 
 router = APIRouter(prefix='/auction')
 templates = Jinja2Templates(directory="templates")
-
+load_dotenv()
 # Homepage for auction
 @router.get("/")
 def home(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
@@ -128,3 +131,22 @@ def search(
     return templates.TemplateResponse(
         "general/homepage.html", {"request": request, "auctions": auctions}
     )
+
+@router.get("/pay")
+async def get_pay(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
+    cost = payment_cost(current_user, db)
+    price = int(cost[0])
+    return templates.TemplateResponse("auction/pay_form.html", {"request": request, "price":price, "user":current_user})
+
+@router.post("/pay")
+async def pay(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
+    id = str(os.getenv("KEY_ID"))
+    secret = str(os.getenv("KEY_SECRET"))
+    client = razorpay.Client(auth=(id, secret))
+    cost = payment_cost(current_user, db)
+    price = int(cost[0])
+    amt = price*100
+    data = { "amount": amt, "currency": "INR", "receipt": str(current_user.id) }
+    payment = client.order.create(data=data)
+    
+    return templates.TemplateResponse("auction/pay.html", {"request":request, "payment": payment, "amt":amt})

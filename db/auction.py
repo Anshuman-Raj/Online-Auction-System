@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from db.models import Users, Auctions
 from webapp.schema import AuctionUpdateRequest, CreateAuctionRequest
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from db.login import get_user_by_email
 import bcrypt
 from pydantic import BaseModel
@@ -63,3 +64,9 @@ def delete_auction(id: str, db: Session):
     item = db.query(Auctions).filter(Auctions.id == id)
     item.delete()
     db.commit()
+
+
+def payment_cost(user: Users, db: Session):
+    query = db.query(func.sum(Auctions.current_bid).label("total")).filter(Auctions.highest_bidder == user.email, Auctions.end_time < dt.utcnow())
+    item = db.execute(query).first()
+    return item
