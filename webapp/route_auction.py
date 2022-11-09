@@ -24,12 +24,12 @@ load_dotenv()
 @router.get("/")
 def home(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
     items = list_auctions(db=db, user=current_user)
-    return templates.TemplateResponse("general/homepage.html", {"request": request, "name":current_user.username, "auctions":items})
+    return templates.TemplateResponse("general/homepage.html", {"request": request, "name":current_user.username, "auctions":items, "is_authenticated": "true"})
     
 # For creating new auctions
 @router.get("/create")
 async def create_auction_form(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
-    return templates.TemplateResponse("auction/create.html", {"request": request})
+    return templates.TemplateResponse("auction/create.html", {"request": request, "is_authenticated": "true"})
     
 
 @router.post("/create")
@@ -42,7 +42,7 @@ async def create_auction(request: Request, current_user: Users = Depends(get_cur
     else:
         errors = []
         errors.append("Please make sure start time, end time are in future and start time is before end time!")
-        return templates.TemplateResponse("auction/create.html", {"request": request, "errors": errors})
+        return templates.TemplateResponse("auction/create.html", {"request": request, "errors": errors, "is_authenticated": "true"})
     
 
 # Delete Auctions
@@ -63,9 +63,10 @@ async def details(id: str, request: Request, current_user: Users = Depends(get_c
         auction = retrieve_auction(id=id, db=db)
         if auction.__dict__["end_time"] <= dt.utcnow():
             user = get_user_by_email(auction.__dict__["highest_bidder"], db)
-            username = user.__dict__["username"]
-            return templates.TemplateResponse("auction/details.html", {"request": request, "auction": auction, "msg": f"Winner is {username}"})
-        return templates.TemplateResponse("auction/details.html", {"request": request, "auction": auction})
+            if user is not None:
+                username = user.__dict__["username"]
+                return templates.TemplateResponse("auction/details.html", {"request": request, "auction": auction, "msg": f"Winner is {username}", "is_authenticated": "true"})
+        return templates.TemplateResponse("auction/details.html", {"request": request, "auction": auction, "is_authenticated": "true"})
     except Exception as e:
         print("\n\n")
         print(e,"\n\n")
@@ -93,16 +94,16 @@ async def bid(id:str, request: Request, current_user: Users = Depends(get_curren
 
     if auc["created_by"] == current_user.id:
         upd.current_bid = auc["current_bid"]
-        return templates.TemplateResponse("auction/details.html", {"request": request, "auction": upd, "msg": "You cannot bid on your own auctions!"})
+        return templates.TemplateResponse("auction/details.html", {"request": request, "is_authenticated": "true", "auction": upd, "msg": "You cannot bid on your own auctions!"})
     
     if dt.utcnow() > auc["end_time"] or dt.utcnow() < auc["start_time"]:
         print(auc["end_time"], "\n",auc["start_time"],"\n", dt.utcnow(), "\n\n\n")
         upd.current_bid = auc["current_bid"]
-        return templates.TemplateResponse("auction/details.html", {"request": request, "auction": upd, "msg": "Auction has either ended or has not started yet! Pls check time in UTC"})
+        return templates.TemplateResponse("auction/details.html", {"request": request, "is_authenticated": "true", "auction": upd, "msg": "Auction has either ended or has not started yet! Pls check time in UTC"})
     
     is_upd = update_auction(auction_id=id, auction=upd,db=db)
     if is_upd:
-        return templates.TemplateResponse("auction/details.html", {"request": request, "auction": upd, "msg": "Successfully placed bid!"})
+        return templates.TemplateResponse("auction/details.html", {"request": request, "is_authenticated": "true", "auction": upd, "msg": "Successfully placed bid!"})
     
     else:
         upd.current_bid = auc["current_bid"]
@@ -112,11 +113,11 @@ async def bid(id:str, request: Request, current_user: Users = Depends(get_curren
 @router.get("/myauctions")
 async def myauctions(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
     auctions = retrieve_auctions(db=db, id=str(current_user.id))
-    return templates.TemplateResponse("auction/myauction.html", {"request": request, "auctions": auctions})
+    return templates.TemplateResponse("auction/myauction.html", {"request": request, "auctions": auctions, "is_authenticated": "true"})
 
 # autocomplete
 @router.get("/autocomplete")
-def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db)):
+def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db), current_user: Users=Depends(get_current_user_from_token)):
     auctions = search_auction(str(term), db=db)
     auction_names = []
     for auc in auctions:
@@ -125,18 +126,18 @@ def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db)):
 
 @router.get("/search/")
 def search(
-    query: Optional[str], request: Request, db: Session = Depends(get_db)
+    query: Optional[str], request: Request, db: Session = Depends(get_db), current_user: Users=Depends(get_current_user_from_token)
 ):
     auctions = search_auction(str(query), db=db)
     return templates.TemplateResponse(
-        "general/homepage.html", {"request": request, "auctions": auctions}
+        "general/homepage.html", {"request": request, "auctions": auctions, "is_authenticated": "true"}
     )
 
 @router.get("/pay")
 async def get_pay(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
     cost = payment_cost(current_user, db)
     price = int(cost[0])
-    return templates.TemplateResponse("auction/pay_form.html", {"request": request, "price":price, "user":current_user})
+    return templates.TemplateResponse("auction/pay_form.html", {"request": request, "is_authenticated": "true", "price":price, "user":current_user})
 
 @router.post("/pay")
 async def pay(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
@@ -149,4 +150,4 @@ async def pay(request: Request, current_user: Users = Depends(get_current_user_f
     data = { "amount": amt, "currency": "INR", "receipt": str(current_user.id) }
     payment = client.order.create(data=data)
     
-    return templates.TemplateResponse("auction/pay.html", {"request":request, "payment": payment, "amt":amt})
+    return templates.TemplateResponse("auction/pay.html", {"request":request, "payment": payment, "amt":amt, "is_authenticated": "true"})

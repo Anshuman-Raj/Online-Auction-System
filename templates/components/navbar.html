@@ -8,6 +8,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          {% if is_authenticated %}
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="/auction">Home</a>
           </li>
@@ -17,16 +18,20 @@
           <li class="nav-item">
             <a class="nav-link" href="/redoc/">Redoc</a>
           </li>
+          {% endif %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Account
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <li><a class="dropdown-item" href="/register">Signup</a></li>
-              <li><a class="dropdown-item" href="/login">Login</a></li>
+              {% if is_authenticated %}
               <li><a class="dropdown-item" href="/logout">Logout</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="/auction/myauctions">My Auctions</a></li>
+              {% else %}
+              <li><a class="dropdown-item" href="/register">Signup</a></li>
+              <li><a class="dropdown-item" href="/login">Login</a></li>
+              {% endif %}
             </ul>
           </li>
         </ul>
@@ -35,16 +40,20 @@
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               auctions
             </a>
+            {% if is_authenticated %}
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
               <li><a class="dropdown-item" href="/auction/create">Create auction</a></li>
               <li><a class="dropdown-item" href="/auction/pay">Make Payments</a></li>
             </ul>
+            {% endif %}
           </li>
         </ul>
+        {% if is_authenticated %}
         <form class="d-flex" action="/auction/search">
           <input class="form-control me-2" name="query" id="autocomplete" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+        {% endif %}
       </div>
     </div>
   </nav>

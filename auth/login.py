@@ -1,6 +1,8 @@
 from auth.route_login import login_for_access_token
 from db.database import get_db
 from fastapi import APIRouter
+from db.models import Users
+from auth.route_login import get_current_user_from_token
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Request
@@ -32,7 +34,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Login Successful :)")
-            response = templates.TemplateResponse("auth/login.html", form.__dict__)
+            response = RedirectResponse(url="/auction", status_code=status.HTTP_302_FOUND)
             login_for_access_token(response=response, form_data=form, db=db)
             return response
         except HTTPException:
@@ -47,7 +49,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
 
 # logout
 @router.get("/logout")
-async def logout(request: Request):
+async def logout(request: Request, current_user: Users = Depends(get_current_user_from_token)):
     response = RedirectResponse('/login', status_code= 302)
     response.delete_cookie(key ='access_token')
     return response
