@@ -136,7 +136,10 @@ def search(
 @router.get("/pay")
 async def get_pay(request: Request, current_user: Users = Depends(get_current_user_from_token), db: Session = Depends(get_db)):
     cost = payment_cost(current_user, db)
-    price = int(cost[0])
+    try:
+        price = int(cost[0])
+    except:
+        price = 0
     return templates.TemplateResponse("auction/pay_form.html", {"request": request, "is_authenticated": "true", "price":price, "user":current_user})
 
 @router.post("/pay")
@@ -145,7 +148,12 @@ async def pay(request: Request, current_user: Users = Depends(get_current_user_f
     secret = str(os.getenv("KEY_SECRET"))
     client = razorpay.Client(auth=(id, secret))
     cost = payment_cost(current_user, db)
-    price = int(cost[0])
+    try:
+        price = int(cost[0])
+    except:
+        price = 0
+    if price == 0:
+        return RedirectResponse(url="/auction/pay", status_code=status.HTTP_302_FOUND)
     amt = price*100
     data = { "amount": amt, "currency": "INR", "receipt": str(current_user.id) }
     payment = client.order.create(data=data)
